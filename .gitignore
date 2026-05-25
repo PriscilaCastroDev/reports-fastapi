@@ -40,5 +40,6 @@ Thumbs.db
 openapi.json
 SPEC.md
 
-#SQL
+# SQL scripts
 indexes.sql
+*.sql

@@ -1,0 +1,41 @@
+# Credenciales reales — nunca al repo
+.env
+
+# Entorno virtual
+.venv/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+*.pyd
+.Python
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build / dist
+dist/
+build/
+*.egg-info/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Reportes generados localmente
+*.xlsx
+
+#Claude
+*.claude
+
+# Docs generadas
+openapi.json
+SPEC.md

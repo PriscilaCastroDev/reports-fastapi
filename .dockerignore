@@ -1,0 +1,32 @@
+# Entorno virtual
+.venv/
+
+# Variables de entorno con credenciales reales
+.env
+
+# Tests y cache
+tests/
+.pytest_cache/
+__pycache__/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docs generadas
+openapi.json
+README.md
+SPEC.md
+
+#Claude
+*.claude

@@ -1,37 +1,37 @@
-name: Build and Push Docker Image
+name: Build and Push Docker Image #Nomnre workflow
 
-on:
+on: #Disparadores
   push:
-    branches: [main]
-    tags: ["v*"]
-  workflow_dispatch: # permite ejecutarlo a mano desde GitHub
+    # branches: [main] #cada git push en main
+    tags: ["v*"] #tags que empiecen con v: v1, v2, etc
+  workflow_dispatch: # permite ejecutarlo a mano desde GitHub - Botón "Run workflow"
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+env: #Variables de entorno globales
+  REGISTRY: ghcr.io #a donde se subre la imagen
+  IMAGE_NAME: ${{ github.repository }} #variable automática de GitHub = priscilacastrodev/reports-fastapi (usuario/repo)
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+  build-and-push: #nombre interno del job
+    runs-on: ubuntu-latest #VM Ubuntu limpia para correr esto
+    permissions: # qué puede hacer el token automático del workflow:
+      contents: read #puede leer el código del repo
+      packages: write # puede publicar packages (imágenes Docker) en GitHub
 
     steps:
-      - name: Checkout code
+      - name: Checkout code #Clona el código
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker Buildx #Bluid Docker
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to GitHub Container Registry # docker login ghcr.io automatico
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
+      - name: Extract metadata # Genera automáticamente los tags de la imagen
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -42,7 +42,7 @@ jobs:
             type=sha,format=short
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push
+      - name: Build and push # Construir y publicar
         uses: docker/build-push-action@v5
         with:
           context: .

@@ -39,3 +39,6 @@ Thumbs.db
 # Docs generadas
 openapi.json
 SPEC.md
+
+#SQL
+indexes.sql

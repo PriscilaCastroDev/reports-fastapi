@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 
 from app.routers import reports
@@ -55,6 +56,13 @@ app = FastAPI(
     license_info={
         "name": "Privado — TXM Global",
     },
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["GET"],
+    allow_headers=["*"],
 )
 
 app.include_router(reports.router)

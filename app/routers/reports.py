@@ -6,7 +6,9 @@ from fastapi.responses import StreamingResponse
 
 from app.db.session import get_db
 from app.reports.base import BaseReport
+from app.reports.cdr_errors import CdrErrorsReport
 from app.reports.dropped_calls import DroppedCallsReport
+from app.reports.duplicate_files import DuplicateFilesReport
 from app.reports.duplicate_cdrs import DuplicateCDRsReport
 from app.reports.suspicious_imsis import SuspiciousImsisReport
 from app.reports.volume_by_record_type import VolumeByRecordTypeReport
@@ -22,6 +24,8 @@ _REGISTRY: dict[str, type[BaseReport]] = {
     "volume-by-record-type": VolumeByRecordTypeReport,
     "dropped-calls": DroppedCallsReport,
     "suspicious-imsis": SuspiciousImsisReport,
+    "cdr-errors": CdrErrorsReport,
+    "duplicate-files": DuplicateFilesReport,
 }
 
 _DESCRIPTIONS: dict[str, str] = {
@@ -29,6 +33,8 @@ _DESCRIPTIONS: dict[str, str] = {
     "volume-by-record-type": "Volumen de CDRs agrupado por record_type (1=Voz, 2=SMS, 3=Datos) con duración total.",
     "dropped-calls": "Llamadas con duration = 0, indicando llamadas caídas o no conectadas.",
     "suspicious-imsis": "IMSIs asociados a más de un IMEI en el período — posible fraude o clonación de SIM.",
+    "cdr-errors": "Errores de CDRs (excluye duplicados). Hoja 'Detalle' con todos los registros; hoja 'Resumen' agrupado por tipo de error con conteo y porcentaje.",
+    "duplicate-files": "Archivos duplicados detectados. Hoja 'Detalle' ordenada por detected_at DESC; hoja 'Resumen' agrupado por source_component con conteo y porcentaje.",
 }
 
 

@@ -68,6 +68,49 @@ def _build_normal(
     wb.save(buffer)
 
 
+def build_excel_multisheet(
+    sheets: list[tuple[str, list[dict], list[tuple[str, str]]]],
+) -> BytesIO:
+    """Build a multi-sheet Excel file.
+
+    Each entry in `sheets` is (sheet_title, rows, columns).
+    """
+    wb = openpyxl.Workbook()
+    wb.remove(wb.active)  # remove default empty sheet
+
+    for sheet_title, rows, columns in sheets:
+        if not columns and rows:
+            columns = [(k.replace("_", " ").title(), k) for k in rows[0].keys()]
+
+        headers = [col[0] for col in columns]
+        keys = [col[1] for col in columns]
+
+        ws = wb.create_sheet(title=sheet_title)
+        ws.append(headers)
+        ws.freeze_panes = "A2"
+
+        for cell in ws[1]:
+            cell.font = _HEADER_FONT
+            cell.fill = _HEADER_FILL
+            cell.alignment = Alignment(horizontal="center")
+
+        col_widths = [len(h) for h in headers]
+
+        for row in rows:
+            values = [_fmt(row.get(k)) for k in keys]
+            ws.append(values)
+            for i, v in enumerate(values):
+                col_widths[i] = max(col_widths[i], len(str(v)) if v is not None else 0)
+
+        for i, width in enumerate(col_widths, start=1):
+            ws.column_dimensions[get_column_letter(i)].width = min(width + 2, 60)
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+    return buffer
+
+
 def _build_streaming(
     buffer: BytesIO,
     rows: list[dict],

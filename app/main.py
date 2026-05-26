@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 
+from app.config import settings
 from app.routers import reports
 
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +24,8 @@ Genera archivos `.xlsx` descargables bajo demanda a partir de datos en ClickHous
 | `dropped-calls` | Llamadas Caídas | Llamadas con `duration = 0` |
 | `suspicious-imsis` | IMSIs/IMEIs Sospechosos | IMSIs asociados a más de un IMEI |
 | `duplicate-cdrs` | CDRs Duplicados | Registros con `error_description = 'REGISTRO_DUPLICADO'` |
+| `cdr-errors` | Errores por CDR | Errores de ingesta (excluye duplicados) — 2 hojas: Detalle + Resumen |
+| `duplicate-files` | Archivos Duplicados | Archivos rechazados por duplicidad — 2 hojas: Detalle + Resumen |
 
 ### Granularidades soportadas
 
@@ -60,7 +63,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=settings.cors_origins_list,
     allow_methods=["GET"],
     allow_headers=["*"],
 )

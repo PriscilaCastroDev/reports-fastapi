@@ -16,6 +16,12 @@ class Settings(BaseSettings):
 
     max_rows_sync: int = 100_000
 
+    cors_origins: str = "http://localhost:3000"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
     @property
     def database_url(self) -> str:
         return (

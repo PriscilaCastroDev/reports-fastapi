@@ -1,0 +1,29 @@
+name: Deploy to Server #nombre del workflow
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Docker Image"] # Debe ser EXACTAMENTE el 'name' de tu archivo publish
+    types:
+      - completed
+  workflow_dispatch: # Te permite ejecutarlo con un botón manualmente
+
+jobs:
+  deploy:
+    runs-on: self-hosted # MÁGIA: Usa el Runner que instalaste en tu servidor local
+
+    # IMPORTANTE: Solo ejecuta el despliegue si la construcción de la imagen fue exitosa
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Actualizar contenedores en el servidor local
+        run: |
+          cd ~/xDR/app
+
+          # Descarga la última versión de la imagen que el otro YAML acaba de subir a GHCR
+          docker compose pull
+
+          # Reinicia los contenedores suavemente (Docker detectará cuál cambió y reiniciará solo ese)
+          docker compose up -d
+
+          # Limpia imágenes viejas para que tu disco duro no se llene
+          docker image prune -f

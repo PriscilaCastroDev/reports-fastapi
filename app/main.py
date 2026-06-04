@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,9 +7,22 @@ from fastapi.openapi.utils import get_openapi
 
 from app.config import settings
 from app.routers import reports
+from app.scheduler import manager
+from app.scheduler import router as schedules
+from app.scheduler.database import init_db
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()  # Crea tablas SQLite si no existen
+    logger.info("SQLite inicializado en %s", settings.sqlite_path)
+    await manager.load_schedules()  # Re-registra schedules activos (regla 4)
+    manager.start()
+    yield
+    manager.shutdown()
 
 _DESCRIPTION = """
 ## CDR Reports API
@@ -42,6 +56,10 @@ _TAGS_METADATA = [
         "description": "Endpoints para descargar reportes en formato Excel (.xlsx).",
     },
     {
+        "name": "schedules",
+        "description": "CRUD de reportes programados (envío automático por email).",
+    },
+    {
         "name": "health",
         "description": "Verificación del estado del servicio.",
     },
@@ -51,6 +69,7 @@ app = FastAPI(
     title="CDR Reports API",
     description=_DESCRIPTION,
     version="0.1.0",
+    lifespan=lifespan,
     openapi_tags=_TAGS_METADATA,
     contact={
         "name": "TXM Global — Equipo de Desarrollo",
@@ -64,11 +83,12 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 
 app.include_router(reports.router)
+app.include_router(schedules.router)
 
 
 @app.get("/health", tags=["health"], summary="Health check")

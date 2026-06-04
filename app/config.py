@@ -16,7 +16,16 @@ class Settings(BaseSettings):
 
     max_rows_sync: int = 100_000
 
-    cors_origins: str = "http://localhost:3000"
+    # Scheduler — persistencia SQLite (relativa para dev; en contenedor se monta /app/data)
+    sqlite_path: str = "data/schedules.db"
+
+    # Scheduler — SMTP (Gmail). En prod, SMTP_PASSWORD es un App Password de 16 chars.
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+
+    cors_origins: str = "http://localhost:3001"
 
     @property
     def cors_origins_list(self) -> list[str]:

@@ -5,28 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
 from app.db.session import get_db
-from app.reports.base import BaseReport
-from app.reports.cdr_errors import CdrErrorsReport
-from app.reports.dropped_calls import DroppedCallsReport
-from app.reports.duplicate_files import DuplicateFilesReport
-from app.reports.duplicate_cdrs import DuplicateCDRsReport
-from app.reports.suspicious_imsis import SuspiciousImsisReport
-from app.reports.volume_by_record_type import VolumeByRecordTypeReport
+from app.reports.registry import REGISTRY
 from app.schemas.reports import ErrorDetail, ReportListResponse, ReportMeta
 from app.services.date_range import get_date_range, get_period_label
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
-
-_REGISTRY: dict[str, type[BaseReport]] = {
-    "duplicate-cdrs": DuplicateCDRsReport,
-    "volume-by-record-type": VolumeByRecordTypeReport,
-    "dropped-calls": DroppedCallsReport,
-    "suspicious-imsis": SuspiciousImsisReport,
-    "cdr-errors": CdrErrorsReport,
-    "duplicate-files": DuplicateFilesReport,
-}
 
 _DESCRIPTIONS: dict[str, str] = {
     "duplicate-cdrs": "Registros de la tabla xdr.cdrs_errors con error_description = 'REGISTRO_DUPLICADO'.",
@@ -52,7 +37,7 @@ def list_reports() -> ReportListResponse:
             description=_DESCRIPTIONS[slug],
             filename_prefix=cls.filename_prefix,
         )
-        for slug, cls in _REGISTRY.items()
+        for slug, cls in REGISTRY.items()
     ]
     return ReportListResponse(reports=reports)
 
@@ -123,7 +108,7 @@ def download_report(
     ),
     db: Client = Depends(get_db),
 ) -> StreamingResponse:
-    if report_name not in _REGISTRY:
+    if report_name not in REGISTRY:
         raise HTTPException(status_code=404, detail=f"Reporte '{report_name}' no encontrado")
 
     try:
@@ -133,7 +118,7 @@ def download_report(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
-    report = _REGISTRY[report_name](db)
+    report = REGISTRY[report_name](db)
     filename = report.build_filename(period_label)
 
     logger.info("Generating report=%s period=%s", report_name, period_label)

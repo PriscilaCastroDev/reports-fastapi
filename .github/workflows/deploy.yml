@@ -19,11 +19,9 @@ jobs:
         run: |
           cd ~/xDR/app
 
-          # Descarga la última versión de la imagen que el otro YAML acaba de subir a GHCR
-          docker compose pull
-
-          # Reinicia los contenedores suavemente (Docker detectará cuál cambió y reiniciará solo ese)
-          docker compose up -d
+          # Descargar y levantar solo el servicio reports-api
+          docker compose pull reports-api
+          docker compose up -d reports-api
 
           # Limpia imágenes viejas para que tu disco duro no se llene
           docker image prune -f

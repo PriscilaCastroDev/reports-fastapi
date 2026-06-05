@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -13,21 +12,27 @@ from app.scheduler.models import ScheduledReport
 
 logger = logging.getLogger(__name__)
 
-# El contenedor corre en UTC; fijamos la tz para que hour/minute de cada
-# schedule se interpreten en hora local (los CronTrigger heredan esta tz).
-_TZ = ZoneInfo(settings.scheduler_timezone)
+# El contenedor corre en UTC; fijamos la tz como STRING (APScheduler la resuelve
+# internamente con pytz). Pasar un objeto zoneinfo.ZoneInfo NO es portable: en
+# Linux el CronTrigger terminaba ignorándola y quedaba en UTC. Además la tz se
+# pasa explícita a cada CronTrigger para no depender de que la herede del scheduler.
+_TZ = settings.scheduler_timezone
 scheduler = AsyncIOScheduler(timezone=_TZ)
 
 
 def _build_trigger(row: ScheduledReport) -> CronTrigger:
     """Mapea frequency -> CronTrigger. APScheduler usa day_of_week 0-6 = lun-dom,
-    igual que el spec."""
+    igual que el spec. La tz se fija explícita en cada trigger."""
     if row.frequency == "daily":
-        return CronTrigger(hour=row.hour, minute=row.minute)
+        return CronTrigger(hour=row.hour, minute=row.minute, timezone=_TZ)
     if row.frequency == "weekly":
-        return CronTrigger(day_of_week=row.day_of_week, hour=row.hour, minute=row.minute)
+        return CronTrigger(
+            day_of_week=row.day_of_week, hour=row.hour, minute=row.minute, timezone=_TZ
+        )
     if row.frequency == "monthly":
-        return CronTrigger(day=row.day_of_month, hour=row.hour, minute=row.minute)
+        return CronTrigger(
+            day=row.day_of_month, hour=row.hour, minute=row.minute, timezone=_TZ
+        )
     raise ValueError(f"Frecuencia inválida: {row.frequency}")
 
 
@@ -61,7 +66,7 @@ def sync_job(row: ScheduledReport) -> None:
 
 def trigger_now(schedule_id: str) -> None:
     """Encola una ejecución inmediata (run-now), independiente del trigger cron."""
-    now = datetime.now(_TZ)
+    now = datetime.now(scheduler.timezone)
     scheduler.add_job(
         run_scheduled_report,
         trigger="date",

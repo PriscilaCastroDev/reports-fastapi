@@ -11,6 +11,9 @@ un `token` compacto para el nombre de archivo y un `label` legible para el email
 
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
+
+from app.config import settings
 
 _MONTHS_ES = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -35,7 +38,9 @@ def _week_of_month(week_start: date) -> int:
 
 
 def compute_period(frequency: str, today: date | None = None) -> PeriodInfo:
-    today = today or date.today()
+    # "Hoy" en la tz del scheduler, no en UTC del contenedor (cerca de
+    # medianoche el período calculado debe coincidir con la hora local).
+    today = today or datetime.now(ZoneInfo(settings.scheduler_timezone)).date()
 
     if frequency == "daily":
         yesterday = today - timedelta(days=1)

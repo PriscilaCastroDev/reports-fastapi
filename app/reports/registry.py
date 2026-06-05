@@ -3,6 +3,7 @@ descargas manuales y el scheduler de envíos automáticos."""
 
 from app.reports.base import BaseReport
 from app.reports.cdr_errors import CdrErrorsReport
+from app.reports.compression_ratio import CompressionRatioReport
 from app.reports.dropped_calls import DroppedCallsReport
 from app.reports.duplicate_cdrs import DuplicateCDRsReport
 from app.reports.duplicate_files import DuplicateFilesReport
@@ -16,4 +17,5 @@ REGISTRY: dict[str, type[BaseReport]] = {
     "suspicious-imsis": SuspiciousImsisReport,
     "cdr-errors": CdrErrorsReport,
     "duplicate-files": DuplicateFilesReport,
+    "compression-ratio": CompressionRatioReport,
 }

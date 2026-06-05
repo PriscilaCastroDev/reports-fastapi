@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     # Scheduler — persistencia SQLite (relativa para dev; en contenedor se monta /app/data)
     sqlite_path: str = "data/schedules.db"
 
+    # Scheduler — zona horaria para interpretar hour/minute de los schedules.
+    # El contenedor corre en UTC; sin esto los jobs se disparan con el offset corrido.
+    scheduler_timezone: str = "America/Mexico_City"
+
     # Scheduler — SMTP (Gmail). En prod, SMTP_PASSWORD es un App Password de 16 chars.
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587

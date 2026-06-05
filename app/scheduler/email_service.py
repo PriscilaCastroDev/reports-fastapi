@@ -53,7 +53,7 @@ async def send_report_email(
     subject = f"[Reporte CDR] {report_title} — {period_label}"
     body = (
         f"Adjunto el reporte '{report_title}' correspondiente al período: {period_label}.\n\n"
-        "Este es un envío automático del sistema de Reportes CDR.\n"
+        "Este es un envío automático del sistema de xDRCompress.\n"
         "No responda a este correo."
     )
     msg = _build_message(to_emails, subject, body)

@@ -20,6 +20,7 @@ _DESCRIPTIONS: dict[str, str] = {
     "suspicious-imsis": "IMSIs asociados a más de un IMEI en el período — posible fraude o clonación de SIM.",
     "cdr-errors": "Errores de CDRs (excluye duplicados). Hoja 'Detalle' con todos los registros; hoja 'Resumen' agrupado por tipo de error con conteo y porcentaje.",
     "duplicate-files": "Archivos duplicados detectados. Hoja 'Detalle' ordenada por detected_at DESC; hoja 'Resumen' agrupado por source_component con conteo y porcentaje.",
+    "compression-ratio": "Salud del pipeline de compresión (xdr.cold_metrics). Hoja 'Resumen' con KPIs (total archivos, compresión promedio, ahorro en GB, archivos con baja compresión <85%); hoja 'Detalle' por archivo.",
 }
 
 

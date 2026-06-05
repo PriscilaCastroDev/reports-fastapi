@@ -1,17 +1,22 @@
 import logging
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy import select
 
+from app.config import settings
 from app.scheduler.database import AsyncSessionLocal
 from app.scheduler.job_runner import run_scheduled_report
 from app.scheduler.models import ScheduledReport
 
 logger = logging.getLogger(__name__)
 
-scheduler = AsyncIOScheduler()
+# El contenedor corre en UTC; fijamos la tz para que hour/minute de cada
+# schedule se interpreten en hora local (los CronTrigger heredan esta tz).
+_TZ = ZoneInfo(settings.scheduler_timezone)
+scheduler = AsyncIOScheduler(timezone=_TZ)
 
 
 def _build_trigger(row: ScheduledReport) -> CronTrigger:
@@ -56,12 +61,13 @@ def sync_job(row: ScheduledReport) -> None:
 
 def trigger_now(schedule_id: str) -> None:
     """Encola una ejecución inmediata (run-now), independiente del trigger cron."""
+    now = datetime.now(_TZ)
     scheduler.add_job(
         run_scheduled_report,
         trigger="date",
-        run_date=datetime.now(),
+        run_date=now,
         args=[schedule_id],
-        id=f"run-now:{schedule_id}:{datetime.now():%Y%m%d%H%M%S%f}",
+        id=f"run-now:{schedule_id}:{now:%Y%m%d%H%M%S%f}",
     )
     logger.info("Run-now encolado id=%s", schedule_id)
 

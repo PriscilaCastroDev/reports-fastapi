@@ -33,10 +33,13 @@ class CompressionRatioReport(BaseReport):
                 max(original_size)    AS original_size,
                 max(parquet_size)     AS parquet_size,
                 max(compress_percent) AS compress_percent
-            FROM xdr.cold_metrics
-            WHERE eventTime >= {from_dt:DateTime}
-              AND eventTime < {to_dt:DateTime}
-              AND compress_percent > 0
+            FROM (
+                SELECT filename, eventTime, original_size, parquet_size, compress_percent
+                FROM xdr.cold_metrics
+                WHERE eventTime >= {from_dt:DateTime}
+                  AND eventTime < {to_dt:DateTime}
+                  AND compress_percent > 0
+            )
             GROUP BY filename
             ORDER BY eventTime DESC
         """

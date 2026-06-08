@@ -27,10 +27,17 @@ class CompressionRatioReport(BaseReport):
         # parquet_size en bytes crudos (no GB) para no perder precisión y evitar
         # el underflow de UInt64 que tendría sum(original_size - parquet_size) en SQL.
         sql = """
-            SELECT filename, processed_at, eventTime, original_size, parquet_size, compress_percent
+            SELECT
+                filename,
+                max(eventTime)        AS eventTime,
+                max(original_size)    AS original_size,
+                max(parquet_size)     AS parquet_size,
+                max(compress_percent) AS compress_percent
             FROM xdr.cold_metrics
             WHERE eventTime >= {from_dt:DateTime}
               AND eventTime < {to_dt:DateTime}
+              AND compress_percent > 0
+            GROUP BY filename
             ORDER BY eventTime DESC
         """
         result = self.db.query(
@@ -42,7 +49,6 @@ class CompressionRatioReport(BaseReport):
     def columns(self) -> list[tuple[str, str]]:
         return [
             ("Filename", "filename"),
-            ("Processed At", "processed_at"),
             ("Event Time", "eventTime"),
             ("Original (GB)", "original_gb"),
             ("Parquet (GB)", "parquet_gb"),
